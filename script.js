@@ -22,7 +22,7 @@ xhr.send()
 console.log("hello THE world");
 
 var xhr1 = new XMLHttpRequest();
-xhr1.open("GET", "http://localhost:8000/api/v1/titles/?sort_by=-imdb_score&genre=Fantasy"); 1
+xhr1.open("GET", "http://localhost:8000/api/v1/titles/?sort_by=-imdb_score&genre=Fantasy");
 
 //var response = JSON.parse(xhr.responseText);
 //xhr.responseType = "json"
@@ -38,31 +38,29 @@ xhr1.onload = function () {
 xhr1.send()
 console.log("hello THE world");
 */
-/*
-let posCarousel = 1;
-const numberImages = 6;
-const lengthCarousel = 4;
-const maxPosCarousel = numberImages - lengthCarousel;
+function retrieveMovies(url, moviesNumber) {
+    let xhr = new XMLHttpRequest();
+    xhr.open("Get", url)
+    xhr.onload = function () {
+        response = JSON.parse(xhr.responseText)
+        for (let i = 0; i < moviesNumber; i++) {
+            console.log(response.results[i].id)
+            console.log(response.results[i].image_url);
+        }
+
+    }
+    xhr.send()
+}
 
 
-function toRight() {
-    if (posCarousel > 1) {
-        posCarousel--;
-        let im = document.getElementById("im" + posCarousel.toString());
-        im.style.order = (parseInt(im.style.order) - numberImages).toString();
-    }
-}
-function toLeft() {
-    if (posCarousel <= maxPosCarousel) {
-        let im = document.getElementById("im" + posCarousel.toString());
-        im.style.order = (parseInt(im.style.order) + numberImages).toString();
-        posCarousel++;
-    }
-}
-*/
+let url = "http://localhost:8000/api/v1/titles/?sort_by=-imdb_score&genre=Fantasy"
+let moviesNumber = 7
+retrieveMovies(url, moviesNumber);
+
+
 
 class Carousel {
-    constructor(images, instanceNumber) {
+    constructor(images, instanceNumber, moviesNumber) {
         let idCarousel = "carousel_" + instanceNumber.toString();
         let idImages = "images_" + instanceNumber.toString();
         let idLeftButton = "leftButton_" + instanceNumber.toString();
@@ -73,7 +71,7 @@ class Carousel {
 
         this.instanceNumber = instanceNumber;
         this.posCarousel = 1;
-        this.numberImages = 6;
+        this.numberImages = moviesNumber;
         const lengthCarousel = 4;
         this.maxPosCarousel = this.numberImages - lengthCarousel;
 
@@ -91,7 +89,7 @@ class Carousel {
         let newButton = document.createElement("input")
         newButton.id = idLeftButton
         newButton.type = "button"
-        newButton.value = "gauche"
+        newButton.value = "<<"
 
 
 
@@ -115,7 +113,7 @@ class Carousel {
         newButton = document.createElement("input")
         newButton.id = idRightButton
         newButton.type = "button"
-        newButton.value = "droite"
+        newButton.value = ">>"
 
 
 
@@ -164,7 +162,7 @@ window.onload = function () {
 
     let carousels = [];
     for (images of imageGenres) {
-        carousels.push(new Carousel(images, carousels.length));
+        carousels.push(new Carousel(images, carousels.length, moviesNumber));
     }
     const body = document.querySelector("body");
     body.onclick = function (event) {
