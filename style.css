@@ -1,16 +1,12 @@
+.carousel {
+    display: flex;
+    align-items: center;
+}
+
 .images {
     display: flex;
-}
-
-body {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-}
-
-#caroussel {
     width: 728px;
-    overflow: auto;
-    border: 2px solid black;
+    overflow: hidden;
+    border: 4px solid black;
+
 }
