@@ -1,61 +1,58 @@
-/*
-console.log("hello THE world");
-var xhr = new XMLHttpRequest();
 
-//xhr.open("GET", "http://localhost:8000/api/v1/titles/?sort_by=-imdb_score");
-xhr.open("GET", "http://localhost:8000/api/v1/titles/?sort_by=-imdb_score&genre=Sci-Fi");
-xhr.open("GET", "http://localhost:8000/api/v1/titles/?sort_by=-imdb_score&genre=Fantasy");
-xhr.open("GET", "http://localhost:8000/api/v1/titles/?sort_by=-imdb_score&genre=Action");
-console.log(xhr.readyState)
-//var response = JSON.parse(xhr.responseText);
-//xhr.responseType = "json"
-
-xhr.onload = function () {
-    response = JSON.parse(xhr.responseText)
-    for (let i = 0; i < 3; i++) {
-        console.log(response.results[i].id)
-        console.log(response.results[i].image_url);
+async function fetchMoviesJSON(urls, counter) {
+    let moviesLists = []
+    for (let url of urls) {
+        let response = await fetch(url);
+        response = await response.json();
+        let moviesList = response.results;
+        let urlNext = response.next;
+        while (moviesList.length < counter) {
+            let response = await fetch(urlNext);
+            response = await response.json();
+            moviesList = moviesList.concat(response.results);
+            urlNext = response.next;
+        }
+        moviesLists.push(moviesList);
     }
-
+    return moviesLists;
 }
-xhr.send()
-console.log("hello THE world");
 
-var xhr1 = new XMLHttpRequest();
-xhr1.open("GET", "http://localhost:8000/api/v1/titles/?sort_by=-imdb_score&genre=Fantasy");
+let urlBestMovie = ["http://localhost:8000/api/v1/titles/?sort_by=-imdb_score"];
+let urls = ["http://localhost:8000/api/v1/titles/?sort_by=-imdb_score&genre=Sci-Fi",
+    "http://localhost:8000/api/v1/titles/?sort_by=-imdb_score&genre=Fantasy",
+    "http://localhost:8000/api/v1/titles/?sort_by=-imdb_score&genre=Action"];
 
-//var response = JSON.parse(xhr.responseText);
-//xhr.responseType = "json"
 
-xhr1.onload = function () {
-    response = JSON.parse(xhr1.responseText)
-    for (let i = 0; i < 3; i++) {
-        console.log(response.results[i].id)
-        console.log(response.results[i].image_url);
+fetchMoviesJSON(urlBestMovie, 1)
+    .then(movie => { console.log(movie[0][0]); return fetchMoviesJSON(urls, 8) })
+    .then(movies => imagesExtraction(movies));
+
+function imagesExtraction(movies) {
+    let imagesGenre = [];
+    for (moviesList of movies) {
+        urlImageList = [];
+        for (movie of moviesList.slice(0, 7)) {
+            urlImageList.push(movie.image_url);
+        }
+        imagesGenre.push(urlImageList);
     }
-
-}
-xhr1.send()
-console.log("hello THE world");
-*/
-function retrieveMovies(url, moviesNumber) {
-    let xhr = new XMLHttpRequest();
-    xhr.open("Get", url)
-    xhr.onload = function () {
-        response = JSON.parse(xhr.responseText)
-        for (let i = 0; i < moviesNumber; i++) {
-            console.log(response.results[i].id)
-            console.log(response.results[i].image_url);
+    console.log(imagesGenre);
+    let moviesNumber = 7;
+    let carousels = [];
+    for (images of imagesGenre) {
+        carousels.push(new Carousel(images, carousels.length, moviesNumber));
+    }
+    const body = document.querySelector("body");
+    body.onclick = function (event) {
+        const element = event.target;
+        if (element.nodeName == "INPUT") {
+            let elementSplit = element.id.split("_");
+            carousels[parseInt(elementSplit[1])][elementSplit[0]]();
         }
 
+
     }
-    xhr.send()
 }
-
-
-let url = "http://localhost:8000/api/v1/titles/?sort_by=-imdb_score&genre=Fantasy"
-let moviesNumber = 7
-retrieveMovies(url, moviesNumber);
 
 
 
@@ -137,29 +134,31 @@ class Carousel {
         }
     }
 }
-const imageGenres = [["https://m.media-amazon.com/images/M/MV5BNjllNTdmYzItM2IwZi00OGIzLWJmZGItZDNiNjNjOGUyMzM5XkEyXkFqcGdeQXVyOTY3MzgxNTE@._V1_UY268_CR3,0,182,268_AL_.jpg",
-    "https://m.media-amazon.com/images/M/MV5BNjNiYTIwYmUtZDlmYy00MWMxLWI0OTAtMmRkODdlMTM1ZTVmXkEyXkFqcGdeQXVyNDcwNDE0Nzk@._V1_UX182_CR0,0,182,268_AL_.jpg",
-    "https://m.media-amazon.com/images/M/MV5BODc0NjViOTUtZWM1Ny00NWQyLTlhNTgtYmYxNTAxNzRkMGEwXkEyXkFqcGdeQXVyNjQ1MDcxNzM@._V1_UY268_CR14,0,182,268_AL_.jpg",
-    "https://m.media-amazon.com/images/M/MV5BOWVmOWRmMWMtMDc2OC00NGM2LTllOTAtMmY5NjVhM2YzYjVlXkEyXkFqcGdeQXVyOTc2MTgwNjY@._V1_UY268_CR3,0,182,268_AL_.jpg",
-    "https://m.media-amazon.com/images/M/MV5BMWFhZDhkYzMtYjM3NC00OTAxLThhNTEtNmM3OGFjODE0OWU3XkEyXkFqcGdeQXVyMTE5NjAxMDQx._V1_UY268_CR73,0,182,268_AL_.jpg",
-    "https://m.media-amazon.com/images/M/MV5BOTk4NGM0NmUtOTc2Yi00NTcxLWE3NGItYzEwODZjNzlhZjE2XkEyXkFqcGdeQXVyNTgyNTA4MjM@._V1_UX182_CR0,0,182,268_AL_.jpg",
-], ["https://m.media-amazon.com/images/M/MV5BNjllNTdmYzItM2IwZi00OGIzLWJmZGItZDNiNjNjOGUyMzM5XkEyXkFqcGdeQXVyOTY3MzgxNTE@._V1_UY268_CR3,0,182,268_AL_.jpg",
-    "https://m.media-amazon.com/images/M/MV5BNjNiYTIwYmUtZDlmYy00MWMxLWI0OTAtMmRkODdlMTM1ZTVmXkEyXkFqcGdeQXVyNDcwNDE0Nzk@._V1_UX182_CR0,0,182,268_AL_.jpg",
-    "https://m.media-amazon.com/images/M/MV5BODc0NjViOTUtZWM1Ny00NWQyLTlhNTgtYmYxNTAxNzRkMGEwXkEyXkFqcGdeQXVyNjQ1MDcxNzM@._V1_UY268_CR14,0,182,268_AL_.jpg",
-    "https://m.media-amazon.com/images/M/MV5BOWVmOWRmMWMtMDc2OC00NGM2LTllOTAtMmY5NjVhM2YzYjVlXkEyXkFqcGdeQXVyOTc2MTgwNjY@._V1_UY268_CR3,0,182,268_AL_.jpg",
-    "https://m.media-amazon.com/images/M/MV5BMWFhZDhkYzMtYjM3NC00OTAxLThhNTEtNmM3OGFjODE0OWU3XkEyXkFqcGdeQXVyMTE5NjAxMDQx._V1_UY268_CR73,0,182,268_AL_.jpg",
-    "https://m.media-amazon.com/images/M/MV5BOTk4NGM0NmUtOTc2Yi00NTcxLWE3NGItYzEwODZjNzlhZjE2XkEyXkFqcGdeQXVyNTgyNTA4MjM@._V1_UX182_CR0,0,182,268_AL_.jpg",
-], ["https://m.media-amazon.com/images/M/MV5BNjllNTdmYzItM2IwZi00OGIzLWJmZGItZDNiNjNjOGUyMzM5XkEyXkFqcGdeQXVyOTY3MzgxNTE@._V1_UY268_CR3,0,182,268_AL_.jpg",
-    "https://m.media-amazon.com/images/M/MV5BNjNiYTIwYmUtZDlmYy00MWMxLWI0OTAtMmRkODdlMTM1ZTVmXkEyXkFqcGdeQXVyNDcwNDE0Nzk@._V1_UX182_CR0,0,182,268_AL_.jpg",
-    "https://m.media-amazon.com/images/M/MV5BODc0NjViOTUtZWM1Ny00NWQyLTlhNTgtYmYxNTAxNzRkMGEwXkEyXkFqcGdeQXVyNjQ1MDcxNzM@._V1_UY268_CR14,0,182,268_AL_.jpg",
-    "https://m.media-amazon.com/images/M/MV5BOWVmOWRmMWMtMDc2OC00NGM2LTllOTAtMmY5NjVhM2YzYjVlXkEyXkFqcGdeQXVyOTc2MTgwNjY@._V1_UY268_CR3,0,182,268_AL_.jpg",
-    "https://m.media-amazon.com/images/M/MV5BMWFhZDhkYzMtYjM3NC00OTAxLThhNTEtNmM3OGFjODE0OWU3XkEyXkFqcGdeQXVyMTE5NjAxMDQx._V1_UY268_CR73,0,182,268_AL_.jpg",
-    "https://m.media-amazon.com/images/M/MV5BOTk4NGM0NmUtOTc2Yi00NTcxLWE3NGItYzEwODZjNzlhZjE2XkEyXkFqcGdeQXVyNTgyNTA4MjM@._V1_UX182_CR0,0,182,268_AL_.jpg",
-]]
-function message(objet) { }
+
+/*
+    const imageGenres = [["https://m.media-amazon.com/images/M/MV5BNjllNTdmYzItM2IwZi00OGIzLWJmZGItZDNiNjNjOGUyMzM5XkEyXkFqcGdeQXVyOTY3MzgxNTE@._V1_UY268_CR3,0,182,268_AL_.jpg",
+        "https://m.media-amazon.com/images/M/MV5BNjNiYTIwYmUtZDlmYy00MWMxLWI0OTAtMmRkODdlMTM1ZTVmXkEyXkFqcGdeQXVyNDcwNDE0Nzk@._V1_UX182_CR0,0,182,268_AL_.jpg",
+        "https://m.media-amazon.com/images/M/MV5BODc0NjViOTUtZWM1Ny00NWQyLTlhNTgtYmYxNTAxNzRkMGEwXkEyXkFqcGdeQXVyNjQ1MDcxNzM@._V1_UY268_CR14,0,182,268_AL_.jpg",
+        "https://m.media-amazon.com/images/M/MV5BOWVmOWRmMWMtMDc2OC00NGM2LTllOTAtMmY5NjVhM2YzYjVlXkEyXkFqcGdeQXVyOTc2MTgwNjY@._V1_UY268_CR3,0,182,268_AL_.jpg",
+        "https://m.media-amazon.com/images/M/MV5BMWFhZDhkYzMtYjM3NC00OTAxLThhNTEtNmM3OGFjODE0OWU3XkEyXkFqcGdeQXVyMTE5NjAxMDQx._V1_UY268_CR73,0,182,268_AL_.jpg",
+        "https://m.media-amazon.com/images/M/MV5BOTk4NGM0NmUtOTc2Yi00NTcxLWE3NGItYzEwODZjNzlhZjE2XkEyXkFqcGdeQXVyNTgyNTA4MjM@._V1_UX182_CR0,0,182,268_AL_.jpg",
+    ], ["https://m.media-amazon.com/images/M/MV5BNjllNTdmYzItM2IwZi00OGIzLWJmZGItZDNiNjNjOGUyMzM5XkEyXkFqcGdeQXVyOTY3MzgxNTE@._V1_UY268_CR3,0,182,268_AL_.jpg",
+        "https://m.media-amazon.com/images/M/MV5BNjNiYTIwYmUtZDlmYy00MWMxLWI0OTAtMmRkODdlMTM1ZTVmXkEyXkFqcGdeQXVyNDcwNDE0Nzk@._V1_UX182_CR0,0,182,268_AL_.jpg",
+        "https://m.media-amazon.com/images/M/MV5BODc0NjViOTUtZWM1Ny00NWQyLTlhNTgtYmYxNTAxNzRkMGEwXkEyXkFqcGdeQXVyNjQ1MDcxNzM@._V1_UY268_CR14,0,182,268_AL_.jpg",
+        "https://m.media-amazon.com/images/M/MV5BOWVmOWRmMWMtMDc2OC00NGM2LTllOTAtMmY5NjVhM2YzYjVlXkEyXkFqcGdeQXVyOTc2MTgwNjY@._V1_UY268_CR3,0,182,268_AL_.jpg",
+        "https://m.media-amazon.com/images/M/MV5BMWFhZDhkYzMtYjM3NC00OTAxLThhNTEtNmM3OGFjODE0OWU3XkEyXkFqcGdeQXVyMTE5NjAxMDQx._V1_UY268_CR73,0,182,268_AL_.jpg",
+        "https://m.media-amazon.com/images/M/MV5BOTk4NGM0NmUtOTc2Yi00NTcxLWE3NGItYzEwODZjNzlhZjE2XkEyXkFqcGdeQXVyNTgyNTA4MjM@._V1_UX182_CR0,0,182,268_AL_.jpg",
+    ], ["https://m.media-amazon.com/images/M/MV5BNjllNTdmYzItM2IwZi00OGIzLWJmZGItZDNiNjNjOGUyMzM5XkEyXkFqcGdeQXVyOTY3MzgxNTE@._V1_UY268_CR3,0,182,268_AL_.jpg",
+        "https://m.media-amazon.com/images/M/MV5BNjNiYTIwYmUtZDlmYy00MWMxLWI0OTAtMmRkODdlMTM1ZTVmXkEyXkFqcGdeQXVyNDcwNDE0Nzk@._V1_UX182_CR0,0,182,268_AL_.jpg",
+        "https://m.media-amazon.com/images/M/MV5BODc0NjViOTUtZWM1Ny00NWQyLTlhNTgtYmYxNTAxNzRkMGEwXkEyXkFqcGdeQXVyNjQ1MDcxNzM@._V1_UY268_CR14,0,182,268_AL_.jpg",
+        "https://m.media-amazon.com/images/M/MV5BOWVmOWRmMWMtMDc2OC00NGM2LTllOTAtMmY5NjVhM2YzYjVlXkEyXkFqcGdeQXVyOTc2MTgwNjY@._V1_UY268_CR3,0,182,268_AL_.jpg",
+        "https://m.media-amazon.com/images/M/MV5BMWFhZDhkYzMtYjM3NC00OTAxLThhNTEtNmM3OGFjODE0OWU3XkEyXkFqcGdeQXVyMTE5NjAxMDQx._V1_UY268_CR73,0,182,268_AL_.jpg",
+        "https://m.media-amazon.com/images/M/MV5BOTk4NGM0NmUtOTc2Yi00NTcxLWE3NGItYzEwODZjNzlhZjE2XkEyXkFqcGdeQXVyNTgyNTA4MjM@._V1_UX182_CR0,0,182,268_AL_.jpg",
+    ]]
+
 
 window.onload = function () {
-
+    let moviesNumber = 6;
     let carousels = [];
     for (images of imageGenres) {
         carousels.push(new Carousel(images, carousels.length, moviesNumber));
@@ -174,5 +173,4 @@ window.onload = function () {
 
     }
 
-}
-
+}*/
