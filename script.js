@@ -1,5 +1,5 @@
 
-async function fetchMoviesJSON(urls, counter) {
+async function fetchMoviesJSON(urls, counter, bestMovie = {}) {
     let moviesLists = []
     for (let url of urls) {
         let response = await fetch(url);
@@ -14,7 +14,8 @@ async function fetchMoviesJSON(urls, counter) {
         }
         moviesLists.push(moviesList);
     }
-    return moviesLists;
+
+    return [moviesLists, bestMovie];
 }
 
 let urlBestMovie = ["http://localhost:8000/api/v1/titles/?sort_by=-imdb_score"];
@@ -22,25 +23,36 @@ let urls = ["http://localhost:8000/api/v1/titles/?sort_by=-imdb_score&genre=Sci-
     "http://localhost:8000/api/v1/titles/?sort_by=-imdb_score&genre=Fantasy",
     "http://localhost:8000/api/v1/titles/?sort_by=-imdb_score&genre=Action"];
 
-
+let moviesNumber = 7;
 fetchMoviesJSON(urlBestMovie, 1)
-    .then(movie => { console.log(movie[0][0]); return fetchMoviesJSON(urls, 8) })
-    .then(movies => imagesExtraction(movies));
+    .then(arrayMovies => { let bestMovie = arrayMovies[0][0][0]; return fetchMoviesJSON(urls, moviesNumber + 1, bestMovie) })
+    .then(arrayMovies => { display(arrayMovies[1], arrayMovies[0], moviesNumber) });
 
-function imagesExtraction(movies) {
-    let imagesGenre = [];
+
+
+
+
+function display(bestMovie, movies, moviesNumber) {
+    console.log(bestMovie);
+    console.log(movies);
+    let moviesGenres = [];
     for (moviesList of movies) {
-        urlImageList = [];
-        for (movie of moviesList.slice(0, 7)) {
-            urlImageList.push(movie.image_url);
+        moviesSelectedList = [];
+        indiceMovie = 0
+        while (moviesSelectedList.length < moviesNumber) {
+            if (moviesList[indiceMovie].id != bestMovie.id) {
+                moviesSelectedList.push(moviesList[indiceMovie]);
+            }
+            indiceMovie++;
+
         }
-        imagesGenre.push(urlImageList);
+        moviesGenres.push(moviesSelectedList);
     }
-    console.log(imagesGenre);
-    let moviesNumber = 7;
+
     let carousels = [];
-    for (images of imagesGenre) {
-        carousels.push(new Carousel(images, carousels.length, moviesNumber));
+    for (moviesList of moviesGenres) {
+        console.log(moviesList);
+        carousels.push(new Carousel(moviesList, carousels.length, moviesNumber));
     }
     const body = document.querySelector("body");
     body.onclick = function (event) {
@@ -57,7 +69,7 @@ function imagesExtraction(movies) {
 
 
 class Carousel {
-    constructor(images, instanceNumber, moviesNumber) {
+    constructor(moviesList, instanceNumber, moviesNumber) {
         let idCarousel = "carousel_" + instanceNumber.toString();
         let idImages = "images_" + instanceNumber.toString();
         let idLeftButton = "leftButton_" + instanceNumber.toString();
@@ -98,9 +110,10 @@ class Carousel {
 
         div = document.querySelector("#" + idImages)
         let i = 1;
-        for (let im of images) {
+        for (let movie of moviesList) {
             let newImg = document.createElement("img");
-            newImg.src = im;
+            newImg.src = movie.image_url;
+            newImg.alt = movie.title;
             newImg.id = "im" + i.toString() + "_" + this.instanceNumber.toString();
             newImg.style.order = i.toString();
             div.appendChild(newImg);
