@@ -1,5 +1,5 @@
 
-async function fetchMoviesJSON(urls, counter) {
+async function fetchMoviesJSON(urls, counter, baseUrl) {
     let moviesLists = []
     for (let url of urls) {
         let response = await fetch(url);
@@ -13,9 +13,12 @@ async function fetchMoviesJSON(urls, counter) {
             urlNext = response.next;
         }
         moviesLists.push(moviesList);
-    }
-
-    return moviesLists;
+    };
+    let bestMovie = moviesLists[0][0];
+    moviesLists[0].splice(0, 1);
+    let response = await fetch(baseUrl + bestMovie.id.toString());
+    bestMovie = await response.json();
+    return [bestMovie, moviesLists];
 }
 
 let genres = {
@@ -25,18 +28,18 @@ let genres = {
     "Action": "Action",
 };
 let nameGenres = Object.keys(genres);
-let baseUrl = "http://localhost:8000/api/v1/titles/?sort_by=-imdb_score";
-let urls = [baseUrl];
-for (let name of nameGenres.slice(1,)) { urls.push(baseUrl + "&genre=" + genres[name]) };
+const baseUrl = "http://localhost:8000/api/v1/titles/";
+const sortQuery = "?sort_by=-imdb_score"
+const urls = [baseUrl + sortQuery];
+for (let name of nameGenres.slice(1,)) { urls.push(baseUrl + sortQuery + "&genre=" + genres[name]) };
 let moviesNumber = 7;
 console.log(urls)
-fetchMoviesJSON(urls, moviesNumber + 1)
-    .then(moviesLists => display(moviesLists, moviesNumber));
+fetchMoviesJSON(urls, moviesNumber + 1, baseUrl)
+    .then(moviesArray => display(moviesArray[0], moviesArray[1], moviesNumber));
 
 
-function display(moviesLists, moviesNumber) {
-    let bestMovie = moviesLists[0][0];
-    moviesLists[0].splice(0, 1);
+function display(bestMovie, moviesLists, moviesNumber) {
+
     console.log(bestMovie);
     console.log(moviesLists)
 
