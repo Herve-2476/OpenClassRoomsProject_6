@@ -1,5 +1,5 @@
 
-async function fetchMoviesJSON(urls, counter, bestMovie = {}) {
+async function fetchMoviesJSON(urls, counter) {
     let moviesLists = []
     for (let url of urls) {
         let response = await fetch(url);
@@ -15,44 +15,37 @@ async function fetchMoviesJSON(urls, counter, bestMovie = {}) {
         moviesLists.push(moviesList);
     }
 
-    return [moviesLists, bestMovie];
+    return moviesLists;
 }
 
-let urlBestMovie = ["http://localhost:8000/api/v1/titles/?sort_by=-imdb_score"];
-let urls = ["http://localhost:8000/api/v1/titles/?sort_by=-imdb_score&genre=Sci-Fi",
-    "http://localhost:8000/api/v1/titles/?sort_by=-imdb_score&genre=Fantasy",
-    "http://localhost:8000/api/v1/titles/?sort_by=-imdb_score&genre=Action"];
-
+let genres = {
+    "Toutes catégories": "",
+    "Animation": "Animation",
+    "Aventure": "Adventure",
+    "Action": "Action",
+};
+let nameGenres = Object.keys(genres);
+let baseUrl = "http://localhost:8000/api/v1/titles/?sort_by=-imdb_score";
+let urls = [baseUrl];
+for (let name of nameGenres.slice(1,)) { urls.push(baseUrl + "&genre=" + genres[name]) };
 let moviesNumber = 7;
-fetchMoviesJSON(urlBestMovie, 1)
-    .then(arrayMovies => { let bestMovie = arrayMovies[0][0][0]; return fetchMoviesJSON(urls, moviesNumber + 1, bestMovie) })
-    .then(arrayMovies => { display(arrayMovies[1], arrayMovies[0], moviesNumber) });
+console.log(urls)
+fetchMoviesJSON(urls, moviesNumber + 1)
+    .then(moviesLists => display(moviesLists, moviesNumber));
 
 
-
-
-
-function display(bestMovie, movies, moviesNumber) {
+function display(moviesLists, moviesNumber) {
+    let bestMovie = moviesLists[0][0];
+    moviesLists[0].splice(0, 1);
     console.log(bestMovie);
-    console.log(movies);
-    let moviesGenres = [];
-    for (moviesList of movies) {
-        moviesSelectedList = [];
-        indiceMovie = 0
-        while (moviesSelectedList.length < moviesNumber) {
-            if (moviesList[indiceMovie].id != bestMovie.id) {
-                moviesSelectedList.push(moviesList[indiceMovie]);
-            }
-            indiceMovie++;
+    console.log(moviesLists)
 
-        }
-        moviesGenres.push(moviesSelectedList);
-    }
-
+    document.querySelector("#imgBestMovie").src = bestMovie.image_url;
+    document.querySelector("#titleBestMovie").innerText = bestMovie.title;
+    document.querySelector("#summaryBestMovie").innerText = bestMovie.description;
     let carousels = [];
-    for (moviesList of moviesGenres) {
-        console.log(moviesList);
-        carousels.push(new Carousel(moviesList, carousels.length, moviesNumber));
+    for (let i in moviesLists) {
+        carousels.push(new Carousel(nameGenres[i], moviesLists[i], carousels.length, moviesNumber));
     }
     const body = document.querySelector("body");
     body.onclick = function (event) {
@@ -69,7 +62,7 @@ function display(bestMovie, movies, moviesNumber) {
 
 
 class Carousel {
-    constructor(moviesList, instanceNumber, moviesNumber) {
+    constructor(nameGenre, moviesList, instanceNumber, moviesNumber) {
         let idCarousel = "carousel_" + instanceNumber.toString();
         let idImages = "images_" + instanceNumber.toString();
         let idLeftButton = "leftButton_" + instanceNumber.toString();
@@ -84,7 +77,9 @@ class Carousel {
         const lengthCarousel = 4;
         this.maxPosCarousel = this.numberImages - lengthCarousel;
 
-
+        let newH1 = document.createElement("h1");
+        newH1.innerText = nameGenre;
+        body.appendChild(newH1);
 
 
         newDiv.classList.add("carousel");
