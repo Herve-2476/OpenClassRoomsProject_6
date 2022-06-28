@@ -18,7 +18,14 @@ async function fetchMoviesJSON(urls, counter, baseUrl) {
     moviesLists[0].splice(0, 1);
     let response = await fetch(baseUrl + bestMovie.id.toString());
     bestMovie = await response.json();
-    return [bestMovie, moviesLists];
+    let detailMoviesObject = { "imgBestMovie": bestMovie };
+    for (let carouselNumber in moviesLists) {
+        for (let imageNumber = 0; imageNumber < counter - 1; imageNumber++) {
+            let response = await fetch(baseUrl + moviesLists[carouselNumber][imageNumber].id.toString());
+            detailMoviesObject["im" + imageNumber.toString() + "_" + carouselNumber.toString()] = await response.json();
+        }
+    }
+    return detailMoviesObject;
 }
 
 let genres = {
@@ -33,39 +40,96 @@ const sortQuery = "?sort_by=-imdb_score"
 const urls = [baseUrl + sortQuery];
 for (let name of nameGenres.slice(1,)) { urls.push(baseUrl + sortQuery + "&genre=" + genres[name]) };
 let moviesNumber = 7;
-console.log(urls)
 fetchMoviesJSON(urls, moviesNumber + 1, baseUrl)
-    .then(moviesArray => display(moviesArray[0], moviesArray[1], moviesNumber));
+    .then(detailMoviesObject => display(detailMoviesObject, moviesNumber));
 
 
-function display(bestMovie, moviesLists, moviesNumber) {
-
-    console.log(bestMovie);
-    console.log(moviesLists)
+function display(detailMoviesObject, moviesNumber) {
+    let bestMovie = detailMoviesObject["imgBestMovie"];
 
     document.querySelector("#imgBestMovie").src = bestMovie.image_url;
+    document.querySelector("#imgBestMovie").alt = bestMovie.title;
     document.querySelector("#titleBestMovie").innerText = bestMovie.title;
     document.querySelector("#summaryBestMovie").innerText = bestMovie.description;
     let carousels = [];
-    for (let i in moviesLists) {
-        carousels.push(new Carousel(nameGenres[i], moviesLists[i], carousels.length, moviesNumber));
+    for (let i in nameGenres) {
+        carousels.push(new Carousel(detailMoviesObject, nameGenres[i], i, moviesNumber));
     }
     const body = document.querySelector("body");
     body.onclick = function (event) {
+
         const element = event.target;
         if (element.nodeName == "INPUT") {
             let elementSplit = element.id.split("_");
             carousels[parseInt(elementSplit[1])][elementSplit[0]]();
         }
+        else if (element.nodeName == "IMG") { displayModal(detailMoviesObject[element.id], modal) }
+    }
 
+    // Get the modal
+    var modal = document.getElementById("myModal");
+
+    // Get the button that opens the modal
+    var btn = document.getElementById("details");
+
+    // Get the <span> element that closes the modal
+    var span = document.getElementsByClassName("close")[0];
+
+    // When the user clicks on the button, open the modal
+    btn.onclick = function () {
+
+        displayModal(detailMoviesObject["imgBestMovie"], modal)
 
     }
+
+    // When the user clicks on <span> (x), close the modal
+    span.onclick = function () {
+        modal.style.display = "none";
+    }
+
+    // When the user clicks anywhere outside of the modal, close it
+    window.onclick = function (event) {
+        if (event.target == modal) {
+            modal.style.display = "none";
+        }
+    }
+
+
+
+}
+function displayModal(movieDetail, modal) {
+    modal.style.display = "block";
+    let img = document.querySelector("#imageModal");
+    img.src = movieDetail.image_url;
+    img.alt = movieDetail.title;
+    let fields = {
+        "Titre : ": "title",
+        "Genres : ": "genres",
+        "Date de sortie : ": "date_published",
+        "Rated : ": "rated",
+        "Score Imdb : ": "imdb_score",
+        "Réalisateurs : ": "directors",
+        "Acteurs : ": "actors",
+        "Durée (mn) : ": "duration",
+        "Pays d'origine : ": "countries",
+        "Résultat au Box Office : ": "worldwide_gross_income",
+        "Résumé : ": "description"
+    };
+    let i = 1;
+    for (let labelField of Object.keys(fields)) {
+        let para = document.querySelector("#modal" + i.toString());
+        para.innerText = labelField + movieDetail[fields[labelField]];
+        i++;
+    }
+
 }
 
 
 
+
+
 class Carousel {
-    constructor(nameGenre, moviesList, instanceNumber, moviesNumber) {
+    constructor(detailMoviesObject, nameGenre, instanceNumber, moviesNumber) {
         let idCarousel = "carousel_" + instanceNumber.toString();
         let idImages = "images_" + instanceNumber.toString();
         let idLeftButton = "leftButton_" + instanceNumber.toString();
@@ -75,10 +139,10 @@ class Carousel {
 
 
         this.instanceNumber = instanceNumber;
-        this.posCarousel = 1;
+        this.posCarousel = 0;
         this.numberImages = moviesNumber;
         const lengthCarousel = 4;
-        this.maxPosCarousel = this.numberImages - lengthCarousel;
+        this.maxPosCarousel = this.numberImages - lengthCarousel - 1;
 
         let newH1 = document.createElement("h1");
         newH1.innerText = nameGenre;
@@ -106,32 +170,33 @@ class Carousel {
 
 
 
-        div = document.querySelector("#" + idImages)
-        let i = 1;
-        for (let movie of moviesList) {
+        div = document.querySelector("#" + idImages);
+        for (let i = 0; i < moviesNumber; i++) {
+
+            let id = "im" + i.toString() + "_" + this.instanceNumber.toString();
+
             let newImg = document.createElement("img");
-            newImg.src = movie.image_url;
-            newImg.alt = movie.title;
-            newImg.id = "im" + i.toString() + "_" + this.instanceNumber.toString();
+            newImg.src = detailMoviesObject[id].image_url;
+            newImg.alt = detailMoviesObject[id].title;
+            newImg.id = id;
             newImg.style.order = i.toString();
             div.appendChild(newImg);
-            i++;
-        }
+        };
 
-        newButton = document.createElement("input")
-        newButton.id = idRightButton
-        newButton.type = "button"
-        newButton.value = ">>"
-
+        newButton = document.createElement("input");
+        newButton.id = idRightButton;
+        newButton.type = "button";
+        newButton.value = ">>";
 
 
-        div = document.querySelector("#" + idCarousel)
+
+        div = document.querySelector("#" + idCarousel);
         div.appendChild(newButton);
 
     }
 
     rightButton() {
-        if (this.posCarousel > 1) {
+        if (this.posCarousel > 0) {
             this.posCarousel--;
             let im = document.getElementById("im" + this.posCarousel.toString() + "_" + this.instanceNumber.toString());
             im.style.order = (parseInt(im.style.order) - this.numberImages).toString();
