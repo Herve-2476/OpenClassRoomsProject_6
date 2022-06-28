@@ -66,6 +66,16 @@ function display(detailMoviesObject, moviesNumber) {
         else if (element.nodeName == "IMG") { displayModal(detailMoviesObject[element.id], modal) }
     }
 
+    let ul = document.querySelector("ul");
+    for (let i in nameGenres) {
+        let newLi = document.createElement("li");
+        let newA = document.createElement("a");
+        newA.href = "#carousel_" + i.toString();
+        newA.innerText = nameGenres[i];
+        newLi.appendChild(newA)
+        ul.appendChild(newLi);
+    }
+
     // Get the modal
     var modal = document.getElementById("myModal");
 
