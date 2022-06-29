@@ -1,25 +1,50 @@
+body {
+    display: block;
+    background: black;
+    margin-left: auto;
+    margin-right: auto;
+    width: 800px;
+    color: white;
+}
+
 header {
     display: flex;
     background: #aaa;
     justify-content: space-between;
+    align-items: center;
 
 }
 
 ul {
+    width: 310px;
     font-size: 2em;
-    text-decoration: none;
+    list-style-type: none;
+
 }
+
+li {
+    padding: 0.1em;
+}
+
+a {
+    color: black;
+    text-decoration: none;
+
+}
+
+a:hover {
+    font-weight: bold;
+}
+
 
 #bestMovie {
-    clear: both;
+    justify-content: space-between;
+    display: flex;
+
 }
 
-body {
-    background-color: black;
-    margin-left: auto;
-    margin-right: auto;
-    width: 800px;
-    color: white
+#bestMovieDescription {
+    padding: 1em;
 }
 
 #titleBestMovie {
@@ -36,54 +61,53 @@ body {
     display: flex;
     width: 728px;
     overflow: hidden;
-    border: 4px solid white;
 
 }
 
-/* The Modal (background) */
+input {
+    background-color: black;
+    color: white;
+}
+
+button {
+    color: white;
+    background-color: #222;
+    border: none;
+}
+
+button:hover,
+input:hover {
+    cursor: pointer;
+}
+
 .modal {
+    color: white;
     display: none;
-    /* Hidden by default */
     position: fixed;
-    /* Stay in place */
     z-index: 1;
-    /* Sit on top */
     left: 0;
     top: 0;
     width: 100%;
-    /* Full width */
     height: 100%;
-    /* Full height */
     overflow: auto;
-    /* Enable scroll if needed */
-    background-color: rgb(0, 0, 0);
-    /* Fallback color */
     background-color: rgba(0, 0, 0, 0.4);
-    /* Black w/ opacity */
 }
 
-/* Modal Content/Box */
 .modal-content {
-    background-color: #fefefe;
-    margin: 15% auto;
-    /* 15% from the top and centered */
+    background-color: #333;
+    margin: 5% auto;
     padding: 20px;
-    border: 1px solid #888;
-    width: 80%;
-    /* Could be more or less, depending on screen size */
+    width: 800px;
 }
 
-/* The Close Button */
 .close {
-    color: #aaa;
+    color: white;
     float: right;
     font-size: 28px;
-    font-weight: bold;
+
 }
 
-.close:hover,
-.close:focus {
-    color: black;
-    text-decoration: none;
+.close:hover {
     cursor: pointer;
+    font-weight: bold;
 }
