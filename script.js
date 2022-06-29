@@ -185,14 +185,14 @@ function displayModal(movieDetail, modal) {
     img.alt = movieDetail.title;
     let fields = {
         "Titre : ": "title",
-        "Genres : ": "genres",
+        "Genre(s) : ": "genres",
         "Date de sortie : ": "date_published",
         "Rated : ": "rated",
         "Score Imdb : ": "imdb_score",
         "Réalisateurs : ": "directors",
         "Acteurs : ": "actors",
         "Durée (mn) : ": "duration",
-        "Pays d'origine : ": "countries",
+        "Pays d'origine(s) : ": "countries",
         "Résultat au Box Office : ": "worldwide_gross_income",
         "Résumé : ": "description"
     };
