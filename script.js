@@ -1,13 +1,18 @@
+async function getJson(url) {
+    let response = await fetch(url);
+    return await response.json();
+
+}
+
 async function fetchMoviesJSON(urls, counter, baseUrl) {
     let moviesLists = []
     for (let url of urls) {
-        let response = await fetch(url);
-        response = await response.json();
+
+        let response = await getJson(url);
         let moviesList = response.results;
         let urlNext = response.next;
         while (moviesList.length < counter) {
-            let response = await fetch(urlNext);
-            response = await response.json();
+            let response = await getJson(urlNext);
             moviesList = moviesList.concat(response.results);
             urlNext = response.next;
         }
@@ -15,13 +20,13 @@ async function fetchMoviesJSON(urls, counter, baseUrl) {
     }
     let bestMovie = moviesLists[0][0];
     moviesLists[0].splice(0, 1);
-    let response = await fetch(baseUrl + bestMovie.id.toString());
-    bestMovie = await response.json();
+    bestMovie = await getJson(baseUrl + bestMovie.id.toString());
     let detailMoviesObject = { "imgBestMovie": bestMovie };
     for (let carouselNumber in moviesLists) {
         for (let imageNumber = 0; imageNumber < counter - 1; imageNumber++) {
-            let response = await fetch(baseUrl + moviesLists[carouselNumber][imageNumber].id.toString());
-            detailMoviesObject["im" + imageNumber.toString() + "_" + carouselNumber.toString()] = await response.json();
+            let url = baseUrl + moviesLists[carouselNumber][imageNumber].id.toString()
+            //key = "img1_2" ==> image one of the carousel two
+            detailMoviesObject["im" + imageNumber.toString() + "_" + carouselNumber.toString()] = await getJson(url);
         }
     }
     return detailMoviesObject;
