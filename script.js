@@ -37,8 +37,9 @@ let genres = {
     "Animation": "Animation",
     "Aventure": "Adventure",
     "Action": "Action",
+    "Comédie": "Comedy",
 };
-let moviesNumber = 7;
+let moviesNumber = 10;
 const baseUrl = "http://localhost:8000/api/v1/titles/";
 const sortQuery = "?sort_by=-imdb_score";
 const urls = [baseUrl + sortQuery];
