@@ -10,17 +10,17 @@ class Carousel {
         this.numberImages = moviesNumber;
 
 
-        let body = document.querySelector("body");
+        let main = document.querySelector("main");
 
         let newH1 = document.createElement("h1");
         newH1.innerText = nameGenre;
         newH1.id = "title_" + instanceNumber.toString();
-        body.appendChild(newH1);
+        main.appendChild(newH1);
 
         let newDiv = document.createElement("div");
         newDiv.classList.add("carousel");
         newDiv.id = idCarousel;
-        body.appendChild(newDiv);
+        main.appendChild(newDiv);
 
         let div = document.querySelector("#" + idCarousel);
 
